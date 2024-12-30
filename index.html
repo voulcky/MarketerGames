@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketer Games</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #root {
+            flex: 1;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Game Data
+        const CASE_STUDIES = {
+            CHEETOS: {
+                title: "Cheetos Challenge",
+                summary: {
+                    title: "Gratulacje! Udało Ci się zaangażować społeczność Cheparda!",
+                    stats: [
+                        "220 streamerów zintegrowało grę ze swoimi transmisjami",
+                        "Ponad 50 000 interakcji z Chepardem",
+                        "Zasięg: 3 214 000 wyświetleń",
+                        "Wzrost rozpoznawalności o 6 punktów procentowych"
+                    ],
+                    color: "orange"
+                }
+            },
+            DANIO: {
+                title: "Danio Challenge",
+                summary: {
+                    title: "Gratulacje! Mały Głód podbił serca graczy!",
+                    stats: [
+                        "Ponad 570 interakcji z Małym Głodem",
+                        "Dotarcie do ponad 650 000 graczy",
+                        "2.5x więcej pozytywnych wzmianek w social media",
+                        "Wartość mediowa 3x przewyższająca wydatki"
+                    ],
+                    color: "blue"
+                }
+            },
+            KNORR: {
+                title: "Knorr Challenge",
+                summary: {
+                    title: "Gratulacje! Stworzyłeś viralowy content dla Knorr!",
+                    stats: [
+                        "530 streamerów w kampanii",
+                        "821 688 wyświetleń",
+                        "CTR na poziomie 0.39%",
+                        "27 dni aktywnej kampanii"
+                    ],
+                    color: "green"
+                }
+            }
+        };
+
+        const GAME_DATA = {
+            cheetos: [
+                {
+                    options: [
+                        { text: "Nakarm Geparda", isCorrect: true },
+                        { text: "Kup teraz", isCorrect: false },
+                        { text: "Dowiedz się więcej", isCorrect: false },
+                        { text: "Poczochraj Geparda", isCorrect: true }
+                    ]
+                },
+                {
+                    options: [
+                        { text: "Naucz sztuczki", isCorrect: true },
+                        { text: "Zobacz promocję", isCorrect: false },
+                        { text: "Zamów Cheetos", isCorrect: false },
+                        { text: "Zabaw się z Gepardem", isCorrect: true }
+                    ]
+                },
+                {
+                    options: [
+                        { text: "Przytul Geparda", isCorrect: true },
+                        { text: "Sprawdź cenę", isCorrect: false },
+                        { text: "Obejrzyj reklamę", isCorrect: false },
+                        { text: "Pogłaszcz Geparda", isCorrect: true }
+                    ]
+                },
+                {
+                    options: [
+                        { text: "Trenuj Geparda", isCorrect: true },
+                        { text: "Dodaj do koszyka", isCorrect: false },
+                        { text: "Zobacz więcej", isCorrect: false },
+                        { text: "Baw się z Gepardem", isCorrect: true }
+                    ]
+                }
+            ],
+            danio: [
+                {
+                    event: "Gracz przegrał walkę",
+                    options: [
+                        { text: "Ale noobek!", isCorrect: true },
+                        { text: "Kup Danio!", isCorrect: false },
+                        { text: "Spróbuj jeszcze raz", isCorrect: false },
+                        { text: "To musiało boleć...", isCorrect: true }
+                    ]
+                },
+                {
+                    event: "Gracz eliminuje przeciwnika",
+                    options: [
+                        { text: "Szef w grze!", isCorrect: true },
+                        { text: "Zjedz Danio!", isCorrect: false },
+                        { text: "Sprawdź ranking", isCorrect: false },
+                        { text: "Elegancko!", isCorrect: true }
+                    ]
+                },
+                {
+                    event: "Gracz pada z wyczerpania",
+                    options: [
+                        { text: "Baterie się kończą!", isCorrect: true },
+                        { text: "Danio doda energii", isCorrect: false },
+                        { text: "Zrób przerwę", isCorrect: false },
+                        { text: "Pora na power nap!", isCorrect: true }
+                    ]
+                },
+                {
+                    event: "Gracz zdobywa achievement",
+                    options: [
+                        { text: "Pro gamer move!", isCorrect: true },
+                        { text: "Świętuj z Danio", isCorrect: false },
+                        { text: "Zobacz statystyki", isCorrect: false },
+                        { text: "Jesteś bestią!", isCorrect: true }
+                    ]
+                }
+            ],
+            knorr: [
+                {
+                    streamerText: "Ale jestem głodny po tej rundzie...",
+                    options: [
+                        { text: "🏍️ Motocyklista Knorr", isCorrect: false },
+                        { text: "🪂 Spadochroniarz Knorr", isCorrect: false },
+                        { text: "🍜 Instant Knorr", isCorrect: true },
+                        { text: "🛥️ Kajakarz Knorr", isCorrect: false }
+                    ]
+                },
+                {
+                    streamerText: "Potrzebuję szybkiej przerwy na jedzenie...",
+                    options: [
+                        { text: "🏍️ Przejażdżka z Knorr", isCorrect: false },
+                        { text: "🍜 Szybki Knorr!", isCorrect: true },
+                        { text: "🪂 Spadający Knorr", isCorrect: false },
+                        { text: "🛥️ Knorr na fali", isCorrect: false }
+                    ]
+                },
+                {
+                    streamerText: "Muszę coś zjeść między meczami...",
+                    options: [
+                        { text: "🏍️ Knorr na motorze", isCorrect: false },
+                        { text: "🪂 Knorr w powietrzu", isCorrect: false },
+                        { text: "🍜 Błyskawiczny Knorr", isCorrect: true },
+                        { text: "🛥️ Knorr płynie", isCorrect: false }
+                    ]
+                },
+                {
+                    streamerText: "Ten stream jest taki długi, czas na przekąskę...",
+                    options: [
+                        { text: "🏍️ Szybka jazda", isCorrect: false },
+                        { text: "🍜 Knorr express!", isCorrect: true },
+                        { text: "🪂 Lot z Knorr", isCorrect: false },
+                        { text: "🛥️ Rejs z Knorr", isCorrect: false }
+                    ]
+                }
+            ]
+        };
+
+        const GAME_CONFIG = {
+            INITIAL_TIME: 30,
+            INITIAL_LIVES: 3,
+            ROUNDS_PER_LEVEL: 4,
+            POINTS_PER_CORRECT: 100
+        };
+
+        // Card Component
+        const Card = ({ children, className = "" }) => (
+            <div className={`bg-white rounded-lg shadow-lg ${className}`}>
+                {children}
+            </div>
+        );
+
+        // Main Game Component
+        const Game = () => {
+            const [state, setState] = useState({
+                level: 0,
+                round: 0,
+                score: 0,
+                lives: GAME_CONFIG.INITIAL_LIVES,
+                timeLeft: GAME_CONFIG.INITIAL_TIME,
+                showingSummary: false,
+                isGameOver: false,
+                isGameWon: false
+            });
+
+            useEffect(() => {
+                if (state.timeLeft > 0 && !state.isGameOver && !state.showingSummary) {
+                    const timer = setInterval(() => {
+                        setState(prev => ({
+                            ...prev,
+                            timeLeft: prev.timeLeft - 1,
+                            isGameOver: prev.timeLeft - 1 <= 0
+                        }));
+                    }, 1000);
+                    return () => clearInterval(timer);
+                }
+            }, [state.timeLeft, state.isGameOver, state.showingSummary]);
+
+            const handleAnswer = (isCorrect) => {
+                if (isCorrect) {
+                    setState(prev => ({
+                        ...prev,
+                        score: prev.score + GAME_CONFIG.POINTS_PER_CORRECT
+                    }));
+                } else {
+                    setState(prev => {
+                        const newLives = prev.lives - 1;
+                        return {
+                            ...prev,
+                            lives: newLives,
+                            isGameOver: newLives <= 0
+                        };
+                    });
+                }
+                
+                setState(prev => {
+                    const nextRound = prev.round + 1;
+                    if (nextRound >= GAME_CONFIG.ROUNDS_PER_LEVEL) {
+                        return {
+                            ...prev,
+                            showingSummary: true
+                        };
+                    }
+                    return {
+                        ...prev,
+                        round: nextRound
+                    };
+                });
+            };
+
+            const handleNextLevel = () => {
+                setState(prev => ({
+                    ...prev,
+                    level: prev.level + 1,
+                    round: 0,
+                    timeLeft: GAME_CONFIG.INITIAL_TIME,
+                    showingSummary: false,
+                    isGameWon: prev.level >= 2
+                }));
+            };
+
+            // Shared Components
+            const GameOver = () => (
+                <Card className="p-6 max-w-2xl mx-auto mt-8 text-center">
+                    <h2 className="text-3xl font-bold mb-6 text-red-600">Game Over!</h2>
+                    <div className="space-y-4 mb-8">
+                        <p className="text-xl mb-4">Gen Z zapomniało o Twoim brandzie 😢</p>
+                        <p className="text-gray-600">
+                            Marketing to trudna sztuka, szczególnie gdy próbujesz dotrzeć do młodego pokolenia.
+                            Nie poddawaj się i spróbuj jeszcze raz!
+                        </p>
+                        <div className="bg-gray-100 p-4 rounded-lg">
+                            <p className="text-lg font-semibold">Twój końcowy wynik:</p>
+                            <p className="text-3xl font-bold text-blue-600">{state.score}</p>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200"
+                    >
+                        Spróbuj ponownie
+                    </button>
+                </Card>
+            );
+
+            const Victory = () => (
+                <Card className="p-6 max-w-2xl mx-auto mt-8 text-center">
+                    <h2 className="text-3xl font-bold mb-6 text-green-600">
+                        Gratulacje! Wygrałeś! 🏆
+                    </h2>
+                    <div className="space-y-4 mb-8">
+                        <p className="text-xl mb-4">
+                            Zostałeś mistrzem marketingu dla Gen Z!
+                        </p>
+                        <p className="text-gray-600">
+                            Udowodniłeś, że rozumiesz jak dotrzeć do młodego pokolenia poprzez innowacyjne
+                            rozwiązania technologiczne i angażujący content.
+                        </p>
+                        <div className="bg-gray-100 p-4 rounded-lg">
+                            <p className="text-lg font-semibold">Twój imponujący wynik:</p>
+                            <p className="text-3xl font-bold text-green-600">{state.score}</p>
+                        </div>
+                        <div className="mt-4 p-4 border border-green-200 rounded-lg">
+                            <p className="font-medium">Poznałeś trzy innowacyjne technologie:</p>
+                            <ul className="text-left list-disc list-inside mt-2">
+                                <li>System opieki nad wirtualnym zwierzakiem (Cheetos)</li>
+                                <li>Instant Reaction Ads w grach (Danio)</li>
+                                <li>Voice Recognition Mechanism (Knorr)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200"
+                    >
+                        Zagraj ponownie
+                    </button>
+                </Card>
+            );
+
+            const LevelSummary = () => {
+                const currentCaseStudy = Object.values(CASE_STUDIES)[state.level];
+                const buttonColors = {
+                    orange: "bg-orange-500 hover:bg-orange-700",
+                    blue: "bg-blue-500 hover:bg-blue-700",
+                    green: "bg-green-500 hover:bg-green-700"
+                };
+
+                return (
+                    <Card className="p-6 max-w-2xl mx-auto mt-8 text-center">
+                        <h2 className="text-2xl font-bold mb-4">{currentCaseStudy.summary.title}</h2>
+                        <div className="mb-6">
+                            {currentCaseStudy.summary.stats.map((stat, index) => (
+                                <p key={index} className="mb-2">{stat}</p>
+                            ))}
+                        </div>
+                        <button 
+                            onClick={handleNextLevel}
+                            className={`${buttonColors[currentCaseStudy.summary.color]} text-white font-bold py-2 px-4 rounded`}
+                        >
+                            {state.level >= 2 ? "Zakończ grę" : "Rozpocznij następne wyzwanie"}
+                        </button>
+                    </Card>
+                );
+            };
+
+            // Level Components
+            const CheetosLevel = () => {
+                const currentRound = GAME_DATA.cheetos[state.round];
+
+                return (
+                    <div>
+                        <h3 className="text-xl mb-4">Wybierz właściwą akcję dla Geparda:</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            {currentRound.options.map((option, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleAnswer(option.isCorrect)}
+                                    className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    {option.text}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+            };
+
+            const DanioLevel = () => {
+                const currentRound = GAME_DATA.danio[state.round];
+
+                return (
+                    <div>
+                        <h3 className="text-xl mb-2">Wydarzenie:</h3>
+                        <p className="mb-4 text-lg font-medium bg-gray-100 p-3 rounded">
+                            {currentRound.event}
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                            {currentRound.options.map((option, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleAnswer(option.isCorrect)}
+                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    {option.text}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+            };
+
+            const KnorrLevel = () => {
+                const currentRound = GAME_DATA.knorr[state.round];
+
+                return (
+                    <div>
+                        <h3 className="text-xl mb-2">Streamer mówi:</h3>
+                        <p className="mb-4 text-lg font-medium bg-gray-100 p-3 rounded italic">
+                            "{currentRound.streamerText}"
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                            {currentRound.options.map((option, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleAnswer(option.isCorrect)}
+                                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    {option.text}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+            };
+
+            if (state.isGameOver) {
+                return <GameOver />;
+            }
+
+            if (state.isGameWon) {
+                return <Victory />;
+            }
+
+            if (state.showingSummary) {
+                return <LevelSummary />;
+            }
+
+            return (
+                <div className="p-4 max-w-4xl mx-auto">
+                    <div className="mb-4 flex justify-between items-center">
+                        <div>
+                            <span className="mr-4">Poziom: {Object.values(CASE_STUDIES)[state.level].title}</span>
+                            <span className="mr-4">Wynik: {state.score}</span>
+                            <span>Życia: {"❤️".repeat(state.lives)}</span>
+                        </div>
+                        <div>
+                            <span>Czas: {state.timeLeft}s</span>
+                        </div>
+                    </div>
+
+                    <Card className="p-6">
+                        {state.level === 0 && <CheetosLevel />}
+                        {state.level === 1 && <DanioLevel />}
+                        {state.level === 2 && <KnorrLevel />}
+                    </Card>
+                </div>
+            );
+        };
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Game />);
+    </script>
+</body>
+</html>
